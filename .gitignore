@@ -1,0 +1,16 @@
+# Generated JSymCompiler and Symmaries outputs
+**/Syrs/
+**/output/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*~
+
+# Editor and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+/Dockerfile.source-build

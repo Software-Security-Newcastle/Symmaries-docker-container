@@ -1,0 +1,10 @@
+* text=auto
+
+Dockerfile text eol=lf
+*.sh text eol=lf
+*.command text eol=lf
+*.md text eol=lf
+
+*.jar binary
+*.so binary
+bin/syrs binary
