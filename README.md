@@ -1,6 +1,6 @@
 # Standalone JSymCompiler and Symmaries Container
 
-This repository packages precompiled **JSymCompiler** and **Symmaries** artefacts into a Linux container. The host only needs Docker. Java, OCaml, APRON, GMP and MPFR do not need to be installed directly on the host.
+This repository packages precompiled **JSymCompiler** and **Symmaries** binaries into a Linux container. The host only needs Docker. Java, OCaml, APRON, GMP and MPFR do not need to be installed directly on the host.
 
 A single container invocation performs the complete workflow:
 
@@ -151,6 +151,14 @@ find CallContext/Syrs/Meth -type f -name '*.secsum' -printf '%f %s bytes\n' | so
 
 Use a clone on a local Windows drive, such as `C:`, rather than an SMB-backed network drive. Docker Desktop may be unable to bind-mount a mapped network location.
 
+### Windows Docker setup 
+Start Docker Desktop and select Linux containers before building: 
+
+```powershell 
+docker desktop start 
+docker context use desktop-linux
+```
+
 Build:
 
 ```powershell
@@ -159,36 +167,46 @@ docker build --tag symmaries-toolchain:binary .
 
 ### AliasingControlFlowInsecure
 
+Set path of folder where doing analysis:
 ```powershell
 $AliasingPath = (Resolve-Path ".\AliasingControlFlowInsecure").Path
 ```
 
+Remove any preexisting results:
 ```powershell
 Remove-Item -Recurse -Force ".\AliasingControlFlowInsecure\Syrs" -ErrorAction SilentlyContinue
 ```
 
+Run the tool, giving set path/location:  
+(Passes jar-to-analyse, sinks/sources.xml, and output location)
 ```powershell
 docker run --rm --mount "type=bind,src=$AliasingPath,dst=/test" symmaries-toolchain:binary /test/program.jar -ss /test/rifl.xml -o /test/Syrs
 ```
 
+Fetch summary of result output files:
 ```powershell
 Get-ChildItem ".\AliasingControlFlowInsecure\Syrs\Meth" -Filter "*.secsum" | Select-Object Name, Length
 ```
 
 ### CallContext
 
+Set path of folder where doing analysis:
 ```powershell
 $CallContextPath = (Resolve-Path ".\CallContext").Path
 ```
 
+Remove any preexisting results:
 ```powershell
 Remove-Item -Recurse -Force ".\CallContext\Syrs" -ErrorAction SilentlyContinue
 ```
 
+Run the tool, giving set path/location:  
+(Passes jar-to-analyse, sinks/sources.xml, and output location)
 ```powershell
 docker run --rm --mount "type=bind,src=$CallContextPath,dst=/test" symmaries-toolchain:binary /test/program.jar -ss /test/rifl.xml -tf /test/all.secstubs -o /test/Syrs
 ```
 
+Fetch summary of result output files:
 ```powershell
 Get-ChildItem ".\CallContext\Syrs\Meth" -Filter "*.secsum" | Select-Object Name, Length
 ```
@@ -200,7 +218,7 @@ Do not add Linux's `--user "$(id -u):$(id -g)"` option in native PowerShell. Doc
 Mount a writable host directory at `/test`, then pass container paths to JSymCompiler:
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" --mount type=bind,src="/absolute/path/to/project",dst=/test symmaries-toolchain:binary /test/application.jar -ss /test/rifl.xml -tf /test/all.secstubs -o /test/Syrs
+docker run --rm --user "$(id -u):$(id -g)" --mount type=bind,src="/ABSOLUTE_PATH/TO/PROJECT",dst=/test symmaries-toolchain:binary /test/APPLICATION.jar -ss /test/RIFL.xml -tf /test/ALL.secstubs -o /test/Syrs
 ```
 
 The container automatically supplies:
@@ -209,7 +227,7 @@ The container automatically supplies:
 -sp /opt/symmaries/syrs
 ```
 
-It deliberately does not pass `+runSyrs`. The current JSymCompiler version writes `syrsCommand.command`, and the container executes that command after the frontend completes.
+The current JSymCompiler version writes `syrsCommand.command`, and the container executes that command after the frontend completes.
 
 ## Common JSymCompiler options
 
@@ -237,7 +255,7 @@ If `-o` is omitted, the container follows JSymCompiler's default and uses `<inpu
 Override the Symmaries heap domain:
 
 ```bash
-docker run --rm -e SYMMARIES_HEAP_DOMAIN=flat ...
+docker run --rm -e SYMMARIES_HEAP_DOMAIN=dumbalias ...
 ```
 
 Override the optional result-name variant:
@@ -268,9 +286,9 @@ Symmaries command completed
 JSymCompiler and Symmaries analysis completed successfully
 ```
 
-### Running the current AMD64 image on ARM hosts
+## Running the current AMD64 image on ARM hosts
 
-The current binary bundle can be used on ARM machines, including Apple Silicon systems, through AMD64 emulation when Docker supports it. This does not provide native ARM performance, but it avoids rebuilding Symmaries and APRON immediately.
+The current binary bundle can be used on ARM machines, including Apple Silicon systems, through AMD64 emulation when Docker supports it.
 
 Build explicitly for the AMD64 bundle:
 

@@ -8,3 +8,4 @@ Dockerfile text eol=lf
 *.jar binary
 *.so binary
 bin/syrs binary
+SHA256SUMS text eol=lf
